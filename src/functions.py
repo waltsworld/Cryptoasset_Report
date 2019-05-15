@@ -1,4 +1,6 @@
 '''Functions to support cryptoasset_report jupyter notebook'''
+import pandas as pd
+import altair as alt
 
 def plot_ind(df, short_var, long_var):
     '''Returns a candlestick chart designed for crossover strategy use.
