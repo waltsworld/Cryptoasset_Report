@@ -61,6 +61,10 @@ class Indicators():
         self.market['change'] = (self.market.groupby('base_asset_id')
                                 .apply(lambda x: x['price_close'].diff())
                                 .reset_index(level=0, drop=True))
+        # Returns
+        self.market['return'] = (self.market.groupby('base_asset_id')['price_close']
+                                 .pct_change(10)
+                                 .reset_index(level=0, drop=True))
 
         # RSI Using Wilder's Smoothing Factor in an EMA based mean.
         name = 'wilder_rsi'

@@ -97,7 +97,11 @@ def plot_ind_trade(df, trade_df, short_var, long_var):
 
     portfolio = alt.Chart(trade_df).mark_line().encode(
         alt.X('date:T', title=None),
-        alt.Y('profit:Q', title='Profit')
+        alt.Y('return:Q', title='Cum. Returns')
+    ).properties(height=100, width=width)
+    asset_return = alt.Chart(df).mark_line().encode(
+        alt.X('date:T', title=None),
+        alt.Y('return:Q', title=None)
     ).properties(height=100, width=width)
     baseline = alt.Chart(threshold).mark_rule(
         size=1.25,
@@ -107,7 +111,7 @@ def plot_ind_trade(df, trade_df, short_var, long_var):
     )
 
     price_collection = price + candles + ind1 + ind2 + trade
-    portfolio_collection = portfolio + baseline
+    portfolio_collection = portfolio + baseline + asset_return
     return price_collection & portfolio_collection
 
 def trade_sim(df, short_var, long_var, price_var, asset_var, date_var='date'):
@@ -125,9 +129,9 @@ def trade_sim(df, short_var, long_var, price_var, asset_var, date_var='date'):
         thus names of columns must be accessible as attributes. (no spaces...)
     '''
     # Setup
-    record = pd.DataFrame(columns=['index', 'date', 'trade', 'price', 'profit', 'asset'])
+    record = pd.DataFrame(columns=['index', 'date', 'trade', 'price', 'return', 'asset'])
     data = df.itertuples()
-    profit = 0
+    cum_return = 0
     can_sell = False
     # Get first calculations
     item = next(data)
@@ -146,13 +150,13 @@ def trade_sim(df, short_var, long_var, price_var, asset_var, date_var='date'):
             if was_above:
                 if can_sell:
                     trade = 'sell'
-                    profit += price - bought_price
+                    cum_return += (price - bought_price)/bought_price
                     can_sell = False
             else:
                 trade = 'buy'
                 bought_price = price
                 can_sell = True
-            record = record.append({'index':index, 'date':date, 'trade':trade, 'price':price, 'profit':profit, 'asset':asset}, ignore_index=True)
+            record = record.append({'index':index, 'date':date, 'trade':trade, 'price':price, 'return':cum_return, 'asset':asset}, ignore_index=True)
         else:
             trade = None
         was_above = is_above
